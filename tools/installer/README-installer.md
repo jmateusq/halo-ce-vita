@@ -21,6 +21,11 @@ files.
   "More info", then "Run anyway"), and some antivirus programs may flag it
   wrongly, as they often do with Python programs packed this way. The
   Python file below is the same tool, readable.
+- **Linux:** run the native `HaloCEVitaInstaller` program built by
+  `build_linux.py` (a Linux ELF program, not the Windows `.exe`: it does not
+  need Wine). It bundles Python, tkinter, the window's pictures and ffmpeg.
+  The tests, the build and the program's selftest also run in the
+  `.github/workflows/linux-installer.yml` workflow.
 - **Any system with Python 3.8 or later:** `python3 halo_ce_vita_installer.py`
   opens the window (on Linux, tkinter may be a separate package:
   `python3-tk` or `tk`). The movie step needs ffmpeg installed. For the
@@ -256,6 +261,26 @@ itself. The
 GitHub Actions workflow `.github/workflows/windows-installer.yml` does the
 same on `windows-latest`, runs the tests and the program's selftest, and
 uploads the program as an artifact. Nothing it downloads is committed.
+
+## Building the Linux program
+
+On Linux, from the repository:
+
+```
+python3 -m pip install -r tools/installer/requirements-build.txt
+sudo apt-get install python3-tk ffmpeg      # Debian/Ubuntu; tk and ffmpeg on other systems
+python tools/installer/build_linux.py        -> tools/installer/dist/HaloCEVitaInstaller
+```
+
+It builds the same tool as `HaloCEVitaInstaller.exe` with PyInstaller, as a
+native Linux ELF program: the window, the five steps and the command line.
+The ffmpeg on `PATH` is bundled with the shared libraries it needs; give
+`--ffmpeg PATH` to choose another build, or `--no-ffmpeg` to leave it out
+(the movie step is optional). Build on the oldest distribution you want the
+program to run on: glibc and FFmpeg's libraries are forward compatible, not
+backward compatible. `selftest --report FILE` checks the built program, and
+the workflow `.github/workflows/linux-installer.yml` does the same on
+`ubuntu-latest` and uploads the program as an artifact.
 
 ## ffmpeg's licence
 

@@ -1,4 +1,4 @@
-# For building HaloCEVitaInstaller.exe (build_windows.py): PyInstaller, and
-# the window's theme packages it puts inside the program
+# For building HaloCEVitaInstaller (build_windows.py or build_linux.py):
+# PyInstaller, and the window's theme packages it puts inside the program
 pyinstaller==6.22.3
 -r requirements.txt

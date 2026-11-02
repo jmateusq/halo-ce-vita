@@ -1,0 +1,56 @@
+name: Linux install tool
+
+# The install helper (tools/installer) on Linux: its tests, then the native
+# HaloCEVitaInstaller built by PyInstaller with ffmpeg inside, checked by its
+# selftest and uploaded as an artifact. Only runs when the tool changes.
+on:
+  push:
+    paths:
+      - "tools/installer/**"
+      - ".github/workflows/linux-installer.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: linux-installer-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tkinter and ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y python3-tk ffmpeg
+
+      - name: Install the build and test tools
+        run: python -m pip install -r tools/installer/requirements-build.txt -r tools/installer/requirements-dev.txt
+
+      - name: Tests
+        run: python -m pytest -q tools/installer/tests
+
+      - name: Install a virtual display for the window tests
+        run: sudo apt-get install -y xvfb
+
+      - name: Build HaloCEVitaInstaller
+        run: python tools/installer/build_linux.py
+
+      - name: Self test of the built program
+        run: |
+          chmod +x tools/installer/dist/HaloCEVitaInstaller
+          tools/installer/dist/HaloCEVitaInstaller selftest --report selftest.txt
+          cat selftest.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HaloCEVitaInstaller-linux
+          path: tools/installer/dist/HaloCEVitaInstaller
+          retention-days: 14
